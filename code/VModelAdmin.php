@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Class VersionedModelAdmin
+ * Class VModelAdmin
  */
-class VersionedModelAdmin extends ModelAdmin
+class VModelAdmin extends ModelAdmin
 {
     /**
      * Customise the edit form so that It uses the VersionedDataObjectDetailsForm as well as make
