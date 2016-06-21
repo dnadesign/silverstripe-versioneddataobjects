@@ -39,51 +39,55 @@ class VersionedDataObjectDetailsForm_ItemRequest extends GridFieldDetailForm_Ite
                     ->setUseButtonTag(true)
             );
 
-            $published = $this->record->isPublished();
+            if($this->record->hasMethod('canPublish') && $this->record->canPublish()) {
 
-            /* @var $publish FormAction */
-            $publish = FormAction::create(
-                'publish',
-                $published ? _t('SiteTree.BUTTONPUBLISHED', 'Published') : _t('SiteTree.BUTTONSAVEPUBLISH', 'Save & publish')
-            )
-                ->setAttribute('data-icon', 'accept')
-                ->setAttribute('data-icon-alternate', 'disk')
-                ->setAttribute('data-text-alternate', _t('SiteTree.BUTTONSAVEPUBLISH', 'Save & publish'))
-                ->setUseButtonTag(true);
+                $published = $this->record->isPublished();
 
-            if ($this->record->stagesDiffer('Stage', 'Live') && $published) {
-                $publish->addExtraClass('ss-ui-alternate');
+                /* @var $publish FormAction */
+                $publish = FormAction::create(
+                    'publish',
+                    $published ? _t('SiteTree.BUTTONPUBLISHED', 'Published') : _t('SiteTree.BUTTONSAVEPUBLISH', 'Save & publish')
+                )
+                    ->setAttribute('data-icon', 'accept')
+                    ->setAttribute('data-icon-alternate', 'disk')
+                    ->setAttribute('data-text-alternate', _t('SiteTree.BUTTONSAVEPUBLISH', 'Save & publish'))
+                    ->setUseButtonTag(true);
 
-                $actions->push(
-                    FormAction::create(
-                        'rollback',
-                        _t(
-                            'SiteTree.BUTTONCANCELDRAFT',
-                            'Cancel draft changes'
+                if ($this->record->stagesDiffer('Stage', 'Live') && $published) {
+                    $publish->addExtraClass('ss-ui-alternate');
+
+                    $actions->push(
+                        FormAction::create(
+                            'rollback',
+                            _t(
+                                'SiteTree.BUTTONCANCELDRAFT',
+                                'Cancel draft changes'
+                            )
+                        )->setDescription(
+                            _t(
+                                'SiteTree.BUTTONCANCELDRAFTDESC',
+                                'Delete your draft and revert to the currently published page'
+                            )
                         )
-                    )->setDescription(
-                        _t(
-                            'SiteTree.BUTTONCANCELDRAFTDESC',
-                            'Delete your draft and revert to the currently published page'
-                        )
-                    )
-                );
+                    );
+                }
+
+                $actions->push($publish);
+
+                if ($published) {
+                    /* @var $unpublish FormAction */
+                    $unpublish = FormAction::create('unpublish', _t('SiteTree.BUTTONUNPUBLISH', 'Unpublish'))
+                        ->addExtraClass('ss-ui-action-destructive');
+
+                    $actions->push($unpublish);
+
+                    $actions->removeByName('action_doDelete');
+                }
+
             }
 
-            $actions->push($publish);
-
-            if ($published) {
-                /* @var $unpublish FormAction */
-                $unpublish = FormAction::create('unpublish', _t('SiteTree.BUTTONUNPUBLISH', 'Unpublish'))
-                    ->addExtraClass('ss-ui-action-destructive');
-
-                $actions->push($unpublish);
-
-                $actions->removeByName('action_doDelete');
-            }
-        
             $this->extend("updateItemEditForm", $form);
-        
+
         }
 
         VersionedReadingMode::restoreOriginalReadingMode();
